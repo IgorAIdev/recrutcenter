@@ -1,4 +1,4 @@
-# Для розгортання через Coolify з Build Pack «Docker Compose».
+# Розгортання через Coolify з Build Pack «Docker Compose».
 # Сайт статичний: збірка відбувається в Dockerfile, назовні йде nginx.
 
 services:
@@ -9,13 +9,22 @@ services:
         # Замінити на бойовий домен — з нього формуються canonical і og:url.
         SITE: ${SITE:-https://lfrecruiting.mil.gov.ua}
     restart: unless-stopped
+
+    # nginx слухає обидва порти — див. коментар у docker/nginx.conf.
     expose:
       - '80'
+      - '3000'
+
     environment:
-      # Coolify підставляє сюди домен застосунку і сам проксіює на порт 80.
-      SERVICE_FQDN_WEB_80: ${SERVICE_FQDN_WEB_80:-}
+      # Магічна змінна Coolify: SERVICE_FQDN_<СЕРВІС>_<ПОРТ>.
+      # Оголошується без значення — Coolify сам підставляє домен і навішує
+      # мітки Traefik на порт 80. Якщо задати значення (навіть порожнє),
+      # магія не спрацьовує і проксі не знає, куди слати запит: буде 404.
+      - SERVICE_FQDN_WEB_80
+
     healthcheck:
-      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost/']
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://127.0.0.1/']
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 10s

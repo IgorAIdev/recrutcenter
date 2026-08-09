@@ -7,6 +7,7 @@ import WhyBlock from '../components/WhyBlock.astro';
 import VacancyCard from '../components/VacancyCard.astro';
 import { vacancies, lastUpdatedAt } from '../data/taxonomy';
 import { positions, shortDate } from '../lib/format';
+import { withBase } from '../lib/paths';
 
 // Порядок блоків — це порядок питань у голові кандидата (розділ 3 брифу).
 const CARD_LIMIT = 9;
@@ -68,7 +69,7 @@ const organizationLd = {
       </p>
 
       <div class="grid__foot">
-        <a class="btn btn--ghost" href="/vacancies" data-catalog-link>
+        <a class="btn btn--ghost" href={withBase("/vacancies")} data-catalog-link>
           <span data-catalog-label>Усі {total} {positions(total)}</span>
         </a>
         <button class="btn btn--ghost" type="button" data-reset data-reset-toggle hidden>

@@ -2,6 +2,7 @@
 import type { Vacancy } from '../data/types';
 import { familyOf } from '../data/taxonomy';
 import { money, shortDate } from '../lib/format';
+import { withBase } from '../lib/paths';
 
 type Props = {
   vacancy: Vacancy;
@@ -22,12 +23,12 @@ const typeLabel = vacancy.type === 'combat' ? 'Бойова посада' : 'З�
   data-type={vacancy.type}
   hidden={hidden}
 >
-  <a class="card__link" href={`/vacancy/${vacancy.slug}`}>
+  <a class="card__link" href={withBase(`/vacancy/${vacancy.slug}`)}>
     <span class="visually-hidden">Відкрити вакансію: {vacancy.role}, {vacancy.unit}</span>
   </a>
 
   <header class="card__unit">
-    <img class="card__patch" src={vacancy.unitPatch} alt="" width="36" height="42" loading="lazy" />
+    <img class="card__patch" src={withBase(vacancy.unitPatch)} alt="" width="36" height="42" loading="lazy" />
     <span class="card__unit-name">{vacancy.unit}</span>
   </header>
 

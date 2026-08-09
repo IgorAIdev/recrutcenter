@@ -6,6 +6,7 @@ import '@fontsource/oswald/600.css';
 import '@fontsource-variable/onest';
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/global.css';
+import { withBase } from '../lib/paths';
 
 type Props = {
   title: string;
@@ -16,7 +17,7 @@ type Props = {
   canonical?: string;
 };
 
-const { title, description, ogImage = '/og-default.svg', canonical } = Astro.props;
+const { title, description, ogImage = withBase('/og-default.svg'), canonical } = Astro.props;
 
 const canonicalUrl = new URL(canonical ?? Astro.url.pathname, Astro.site);
 const ogImageUrl = new URL(ogImage, Astro.site);
@@ -44,7 +45,7 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <meta property="og:image" content={ogImageUrl.href} />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href={withBase("/favicon.svg")} type="image/svg+xml" />
 
     <slot name="head" />
   </head>
@@ -54,16 +55,16 @@ const ogImageUrl = new URL(ogImage, Astro.site);
 
     <header class="masthead">
       <div class="shell masthead__inner">
-        <a class="wordmark" href="/">
+        <a class="wordmark" href={withBase("/")}>
           <span class="wordmark__line">Центр рекрутингу</span>
           <span class="wordmark__line wordmark__line--dim">Збройних Сил України</span>
         </a>
 
         <nav class="masthead__nav" aria-label="Основна навігація">
-          <a href="/vacancies">Вакансії</a>
-          <a href="/#shliakhy">Три шляхи</a>
-          <a href="/about">Про центр</a>
-          <a href="/#kontakty">Контакти</a>
+          <a href={withBase("/vacancies")}>Вакансії</a>
+          <a href={withBase("/#shliakhy")}>Три шляхи</a>
+          <a href={withBase("/about")}>Про центр</a>
+          <a href={withBase("/#kontakty")}>Контакти</a>
         </nav>
 
         <a class="masthead__phone data" href="tel:0800000000">0 800 000 000</a>

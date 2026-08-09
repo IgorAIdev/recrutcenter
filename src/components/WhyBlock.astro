@@ -2,6 +2,7 @@
 import responseTime from '../data/response-time.json';
 import { lastUpdatedAt, vacancies } from '../data/taxonomy';
 import { shortDate } from '../lib/format';
+import { withBase } from '../lib/paths';
 
 // Кожен пункт — або цифра, або механіка, яку видно на сайті.
 // Жодних «професіоналізм», «відкритість», «сучасний підхід».
@@ -46,7 +47,7 @@ const commitments = [
       <h2 class="section-title">Чому через центр</h2>
       <p class="section-note">
         Чотири зобов'язання, кожне з яких можна перевірити просто на цьому сайті.
-        Розгорнуто — у розділі <a href="/about">«Про центр»</a>.
+        Розгорнуто — у розділі <a href={withBase("/about")}>«Про центр»</a>.
       </p>
     </div>
 

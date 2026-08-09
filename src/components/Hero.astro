@@ -10,6 +10,7 @@ import {
   lastUpdatedAt,
 } from '../data/taxonomy';
 import { positions, shortDate } from '../lib/format';
+import { withBase } from '../lib/paths';
 
 const familyCounts = countByFamily();
 const regionCounts = countBy('regionGroup');
@@ -46,7 +47,7 @@ const updatedAt = lastUpdatedAt();
       Сама заявка — дві хвилини.
     </p>
 
-    <form class="picker" id="picker" action="/vacancies" method="get">
+    <form class="picker" id="picker" action={withBase("/vacancies")} method="get">
       <div class="picker__row">
         <label class="field">
           <span class="field__label eyebrow">Спеціальність</span>
@@ -88,7 +89,7 @@ const updatedAt = lastUpdatedAt();
     </form>
 
     <p class="hero__quiz dim">
-      Не знаєш, з чого почати — <a href="/quiz">пройди тест</a> на три питання.
+      Не знаєш, з чого почати — <a href={withBase("/quiz")}>пройди тест</a> на три питання.
     </p>
   </div>
 </section>

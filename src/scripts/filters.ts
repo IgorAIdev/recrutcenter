@@ -3,6 +3,7 @@
  * у розмітку на білді. Один стан на сторінку — усі групи з однаковим `name`
  * синхронізуються між блоками.
  */
+import { withBase } from '../lib/paths';
 
 type FilterName = 'family' | 'region' | 'type';
 
@@ -114,7 +115,7 @@ function apply(): void {
       : `Усі ${total} ${positions(total)}`;
   }
 
-  if (catalogLink) catalogLink.href = `/vacancies${query()}`;
+  if (catalogLink) catalogLink.href = `${withBase("/vacancies")}${query()}`;
 
   // Дублікати значень у прихованих полях форми — щоб GET-перехід ніс той самий вибір.
   for (const mirror of document.querySelectorAll<HTMLInputElement>('[data-filter-mirror]')) {

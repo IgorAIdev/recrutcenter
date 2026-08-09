@@ -1,0 +1,138 @@
+---
+import Base from '../layouts/Base.astro';
+import HeroMedia from '../components/HeroMedia.astro';
+import PayBlock from '../components/PayBlock.astro';
+import PathTiles from '../components/PathTiles.astro';
+import WhyBlock from '../components/WhyBlock.astro';
+import StepsBlock from '../components/StepsBlock.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import StoriesBlock from '../components/StoriesBlock.astro';
+import UnitsGrid from '../components/UnitsGrid.astro';
+import ContactsBlock from '../components/ContactsBlock.astro';
+import VacancyCard from '../components/VacancyCard.astro';
+import { vacancies, lastUpdatedAt } from '../data/taxonomy';
+import { positions, shortDate } from '../lib/format';
+import { withBase } from '../lib/paths';
+
+/**
+ * Варіант Б для A/B першого екрана. Від головної відрізняється рівно одним —
+ * героєм. Решта сторінки однакова, інакше порівняння нічого не покаже.
+ *
+ * Метрика порівняння — не час на сайті, а частка тих, хто дійшов до відправки
+ * заявки. Сторінка закрита від індексації, щоб не конкурувати з головною.
+ */
+const CARD_LIMIT = 9;
+const sorted = [...vacancies].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+const total = vacancies.length;
+
+const title = 'Варіант Б першого екрана — Центр рекрутингу ЗСУ';
+const description =
+  'Друга половина A/B: той самий гібрид першого екрана, але з фоновим шаром замість сухої типографіки.';
+---
+
+<Base title={title} description={description} canonical="/variant-b">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
+  <p class="ab-note data">
+    Варіант Б для порівняння. Відрізняється тільки перший екран.{' '}
+    <a href={withBase('/')}>Відкрити варіант А</a>
+  </p>
+
+  <HeroMedia />
+  <PayBlock />
+
+  <section class="section" id="vakansii">
+    <div class="shell">
+      <div class="section-head">
+        <h2 class="section-title">Популярні вакансії</h2>
+        <p class="section-note">
+          Картки реагують на вибір угорі сторінки. Дані звірено зі штатним розписом{' '}
+          <span class="data">{shortDate(lastUpdatedAt())}</span>.
+        </p>
+      </div>
+
+      <div class="grid" data-vacancy-grid data-limit={CARD_LIMIT}>
+        {sorted.map((vacancy, index) => (
+          <VacancyCard vacancy={vacancy} hidden={index >= CARD_LIMIT} />
+        ))}
+      </div>
+
+      <p class="empty" data-empty hidden>
+        За таким поєднанням фільтрів зараз немає відкритих позицій.
+        <button class="empty__reset" type="button" data-reset>Скинути фільтри</button>
+      </p>
+
+      <div class="grid__foot">
+        <a class="btn btn--ghost" href={withBase('/vacancies')} data-catalog-link>
+          <span data-catalog-label>Усі {total} {positions(total)}</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <PathTiles />
+  <WhyBlock />
+  <StepsBlock />
+  <FaqBlock />
+  <StoriesBlock />
+  <UnitsGrid />
+  <ContactsBlock />
+</Base>
+
+<script>
+  import '../scripts/filters';
+</script>
+
+<style>
+  .ab-note {
+    padding: var(--gap-3) var(--pad);
+    background: var(--field-3);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    text-align: center;
+    color: var(--canvas-dim);
+  }
+
+  .ab-note a { color: var(--signal); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-4);
+  }
+
+  .empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--gap-3);
+    padding: var(--gap-6) 0;
+    color: var(--canvas-dim);
+    font-size: 15px;
+  }
+
+  .empty__reset {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--signal);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: .22em;
+  }
+
+  .grid__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-3);
+    margin-top: var(--gap-5);
+  }
+
+  @media (max-width: 980px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

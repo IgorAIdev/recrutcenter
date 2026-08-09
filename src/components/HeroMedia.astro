@@ -1,0 +1,203 @@
+---
+import FilterControls from './FilterControls.astro';
+import { vacancies, lastUpdatedAt } from '../data/taxonomy';
+import { positions, shortDate } from '../lib/format';
+import { withBase } from '../lib/paths';
+
+/**
+ * Варіант Б першого екрана: той самий гібрид, але з фоновим шаром.
+ * Це друга половина A/B із розділу 2 брифу.
+ *
+ * Правила, які лишаються непорушними:
+ * — жодного прелоадера, контент рендериться одразу;
+ * — `preload="none"`: відео не важить нічого до рішення його вмикати;
+ * — перший кадр — постер, тобто екран повний навіть без відео;
+ * — відео вмикається тільки на швидкій мережі та без prefers-reduced-motion.
+ */
+import { existsSync } from 'node:fs';
+
+const total = vacancies.length;
+const updatedAt = lastUpdatedAt();
+const poster = withBase('/media/hero-poster.svg');
+
+// Файла з відео поки немає. Перевіряємо на білді, щоб браузер не ходив
+// по неіснуючу адресу: без ролика екран лишається на постері.
+const videoSrc = existsSync('public/media/hero.mp4') ? withBase('/media/hero.mp4') : null;
+---
+
+<section class="hero">
+  <div class="hero__media" aria-hidden="true">
+    <video
+      class="hero__video"
+      poster={poster}
+      preload="none"
+      muted
+      loop
+      playsinline
+      data-hero-video
+      data-src={videoSrc}
+    ></video>
+    <div class="hero__scrim"></div>
+  </div>
+
+  <div class="shell hero__inner">
+    <p class="eyebrow">
+      {total} відкритих {positions(total)} · оновлено {shortDate(updatedAt)}
+    </p>
+
+    <h1 class="hero__title">Обери свою посаду</h1>
+
+    <p class="hero__lead">
+      Спеціальність, підрозділ, регіон і сума виплати — видно до того, як подаси заявку.
+      Сама заявка — дві хвилини.
+    </p>
+
+    <form class="picker" action={withBase('/vacancies')} method="get">
+      <FilterControls />
+
+      <div class="picker__result">
+        <p class="counter" aria-live="polite">
+          <span class="counter__value data" data-counter-value>{total}</span>
+          <span class="counter__word">
+            <span data-counter-word>{positions(total)}</span>
+            <span class="dim">за твоїм вибором</span>
+          </span>
+        </p>
+
+        <button class="btn btn--action" type="submit">Переглянути вакансії</button>
+      </div>
+    </form>
+
+    <p class="hero__quiz dim">
+      Не знаєш, з чого почати — <a href={withBase('/quiz')}>пройди тест</a> на три питання.
+    </p>
+  </div>
+</section>
+
+<script>
+  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+  const src = video?.dataset.src;
+
+  if (video && src) {
+    const connection = (navigator as any).connection;
+    const slow =
+      connection?.saveData === true ||
+      ['slow-2g', '2g', '3g'].includes(connection?.effectiveType ?? '');
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Мобільний на поганій мережі — норма проектування, а не крайній випадок:
+    // за цих умов екран лишається на постері й не важить нічого.
+    if (!slow && !still) {
+      video.addEventListener('error', () => video.removeAttribute('src'), { once: true });
+      video.src = src;
+      video.play().catch(() => {
+        /* автоплей заблоковано — постер лишається, це прийнятний результат */
+      });
+    }
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    padding-block: clamp(56px, 9vw, 128px) clamp(40px, 6vw, 72px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .hero__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Затемнення заради контрасту тексту, а не заради краси. */
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to right, var(--field) 0%, color-mix(in srgb, var(--field) 72%, transparent) 40%, color-mix(in srgb, var(--field) 10%, transparent) 100%),
+      linear-gradient(to bottom, color-mix(in srgb, var(--field) 30%, transparent) 0%, color-mix(in srgb, var(--field) 20%, transparent) 60%, var(--field) 100%);
+  }
+
+  .hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gap-4);
+  }
+
+  .hero__title {
+    font-size: clamp(46px, 11vw, 116px);
+    line-height: .92;
+    letter-spacing: .005em;
+    margin-block: var(--gap-2) var(--gap-3);
+  }
+
+  .hero__lead {
+    max-width: 52ch;
+    font-size: clamp(16px, 2vw, 19px);
+    color: var(--canvas-dim);
+  }
+
+  .picker {
+    width: 100%;
+    max-width: 760px;
+    margin-top: var(--gap-4);
+    padding: var(--gap-5);
+    background: color-mix(in srgb, var(--field-2) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-5);
+  }
+
+  .picker__result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-4);
+    padding-top: var(--gap-5);
+    border-top: 1px solid var(--line);
+  }
+
+  .counter {
+    display: flex;
+    align-items: baseline;
+    gap: var(--gap-3);
+  }
+
+  .counter__value {
+    font-size: clamp(36px, 6vw, 52px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .counter__word {
+    display: grid;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .picker__result .btn { flex: none; }
+
+  .hero__quiz { font-size: 14px; }
+
+  @media (max-width: 620px) {
+    .picker { padding: var(--gap-4); }
+    .picker__result { align-items: stretch; }
+    .picker__result .btn { width: 100%; }
+  }
+</style>

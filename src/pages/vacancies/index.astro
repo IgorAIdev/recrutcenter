@@ -1,0 +1,162 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FilterControls from '../../components/FilterControls.astro';
+import VacancyCard from '../../components/VacancyCard.astro';
+import { vacancies, lastUpdatedAt } from '../../data/taxonomy';
+import { positions, shortDate } from '../../lib/format';
+
+// Каталог показує весь набір: ліміту немає, обрізає тільки фільтр.
+const sorted = [...vacancies].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+const total = vacancies.length;
+
+const title = `Усі вакансії ЗСУ — ${total} відкритих позицій — Центр рекрутингу`;
+const description =
+  'Повний каталог відкритих посад у підрозділах Збройних Сил України. Фільтр за спеціальністю, напрямком і типом посади; у кожній вакансії — сума виплати, регіон служби та строк навчання.';
+---
+
+<Base title={title} description={description}>
+  <div class="shell">
+    <Breadcrumbs items={[{ label: 'Вакансії' }]} />
+  </div>
+
+  <section class="catalog">
+    <div class="shell">
+      <header class="catalog__head">
+        <h1 class="catalog__title">Вакансії</h1>
+        <p class="catalog__note dim">
+          Дані звірено зі штатним розписом{' '}
+          <span class="data">{shortDate(lastUpdatedAt())}</span>. Закриті позиції
+          знімаються того ж дня.
+        </p>
+      </header>
+
+      <div class="catalog__filters">
+        <FilterControls showLabels={false} />
+
+        <p class="catalog__count" aria-live="polite">
+          <span class="catalog__count-value data" data-counter-value>{total}</span>
+          <span class="catalog__count-word data dim" data-counter-word>{positions(total)}</span>
+          <button class="catalog__reset" type="button" data-reset data-reset-toggle hidden>
+            Скинути
+          </button>
+        </p>
+      </div>
+
+      <div class="grid" data-vacancy-grid data-limit={total}>
+        {sorted.map((vacancy) => <VacancyCard vacancy={vacancy} />)}
+      </div>
+
+      <p class="empty" data-empty hidden>
+        За таким поєднанням фільтрів зараз немає відкритих позицій.
+        <button class="empty__reset" type="button" data-reset>Скинути фільтри</button>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import '../../scripts/filters';
+</script>
+
+<style>
+  .catalog {
+    padding-block: var(--gap-5) clamp(48px, 8vw, 96px);
+  }
+
+  .catalog__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--gap-4);
+    margin-bottom: var(--gap-5);
+  }
+
+  .catalog__title {
+    font-size: clamp(34px, 6vw, 64px);
+  }
+
+  .catalog__note {
+    font-size: 14px;
+    max-width: 46ch;
+  }
+
+  .catalog__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--gap-4);
+    padding: var(--gap-4);
+    margin-bottom: var(--gap-5);
+    background: var(--field-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .catalog__filters > :global(.controls) {
+    flex: 1 1 460px;
+  }
+
+  .catalog__count {
+    display: flex;
+    align-items: baseline;
+    gap: var(--gap-2);
+  }
+
+  .catalog__count-value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
+  }
+
+  .catalog__count-word { font-size: 13px; }
+
+  .catalog__reset {
+    margin-left: var(--gap-2);
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--signal);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: .22em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-4);
+  }
+
+  .empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--gap-3);
+    padding: var(--gap-6) 0;
+    color: var(--canvas-dim);
+    font-size: 15px;
+  }
+
+  .empty__reset {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--signal);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: .22em;
+  }
+
+  @media (max-width: 980px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

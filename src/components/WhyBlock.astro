@@ -1,0 +1,134 @@
+---
+import responseTime from '../data/response-time.json';
+import { lastUpdatedAt, vacancies } from '../data/taxonomy';
+import { shortDate } from '../lib/format';
+
+// Кожен пункт — або цифра, або механіка, яку видно на сайті.
+// Жодних «професіоналізм», «відкритість», «сучасний підхід».
+const catalogUpdatedAt = lastUpdatedAt();
+
+const commitments = [
+  {
+    id: 'source',
+    title: 'Актуальність із першоджерела',
+    text: 'Позиції беруться зі штатного розпису підрозділів, а не з листа, який частина надіслала місяць тому. На кожній вакансії стоїть дата звірки, закриті позиції знімаються того ж дня.',
+    metric: shortDate(catalogUpdatedAt),
+    metricLabel: `останнє оновлення каталогу · ${vacancies.length} позицій`,
+  },
+  {
+    id: 'response',
+    title: 'Відповідь за 24 години',
+    text: 'Це не фраза, а опублікована метрика: середній час до першого дзвінка рекрутера. Рахується автоматично, тому порушити її тихо неможливо.',
+    metric: `${responseTime.hours} год ${responseTime.minutes} хв`,
+    metricLabel: `середній час першої відповіді ${responseTime.periodLabel}`,
+    pending: !responseTime.published,
+  },
+  {
+    id: 'status',
+    title: 'Видно, що з твоєю заявкою',
+    text: 'Після подання видно етап: прийнято → рекрутер узяв у роботу → призначено співбесіду з підрозділом. Не «заявку надіслано» і тиша.',
+    metric: '4 етапи',
+    metricLabel: 'статус заявки в особистому посиланні',
+  },
+  {
+    id: 'operator',
+    title: 'Один оператор — уся дорога',
+    text: 'Від заявки до прибуття в підрозділ: ТЦК, ВЛК, оформлення документів. Рекрутер веде кандидата до кінця, а не передає контакт і зникає.',
+    metric: 'до 45 діб',
+    metricLabel: 'від заявки до підрозділу',
+  },
+];
+---
+
+<section class="section" id="chomu-tsentr">
+  <div class="shell">
+    <div class="section-head">
+      <h2 class="section-title">Чому через центр</h2>
+      <p class="section-note">
+        Чотири зобов'язання, кожне з яких можна перевірити просто на цьому сайті.
+        Розгорнуто — у розділі <a href="/about">«Про центр»</a>.
+      </p>
+    </div>
+
+    <ul class="why">
+      {commitments.map((item) => (
+        <li class="why__item">
+          <p class="why__metric data">{item.metric}</p>
+          <p class="why__metric-label data dim">{item.metricLabel}</p>
+          {item.pending && (
+            <p class="why__pending data">Демонстраційне значення до під'єднання обліку заявок</p>
+          )}
+          <h3 class="why__title">{item.title}</h3>
+          <p class="why__text dim">{item.text}</p>
+        </li>
+      ))}
+    </ul>
+
+    <p class="why__official dim">
+      Домен у зоні <span class="data">.mil.gov.ua</span>, оформлення без посередників
+      і без будь-якої плати.
+    </p>
+  </div>
+</section>
+
+<style>
+  .why {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .why__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2);
+    padding: var(--gap-5);
+    background: var(--field-2);
+  }
+
+  .why__metric {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
+    color: var(--canvas);
+  }
+
+  .why__metric-label {
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .why__pending {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--combat);
+  }
+
+  .why__title {
+    font-size: 19px;
+    font-weight: 500;
+    margin-top: var(--gap-3);
+  }
+
+  .why__text {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .why__official {
+    margin-top: var(--gap-4);
+    font-size: 13px;
+  }
+
+  @media (max-width: 860px) {
+    .why { grid-template-columns: 1fr; }
+  }
+</style>

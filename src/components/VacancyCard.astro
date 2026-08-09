@@ -1,0 +1,185 @@
+---
+import type { Vacancy } from '../data/types';
+import { familyOf } from '../data/taxonomy';
+import { money, shortDate } from '../lib/format';
+
+type Props = {
+  vacancy: Vacancy;
+  /** Картки понад ліміт блока рендеряться прихованими — щоб без JS показувались перші N. */
+  hidden?: boolean;
+};
+
+const { vacancy, hidden = false } = Astro.props;
+
+const typeLabel = vacancy.type === 'combat' ? 'Бойова посада' : 'Забезпечення';
+---
+
+<article
+  class="card"
+  data-vacancy
+  data-family={familyOf(vacancy)}
+  data-region-group={vacancy.regionGroup}
+  data-type={vacancy.type}
+  hidden={hidden}
+>
+  <a class="card__link" href={`/vacancy/${vacancy.slug}`}>
+    <span class="visually-hidden">Відкрити вакансію: {vacancy.role}, {vacancy.unit}</span>
+  </a>
+
+  <header class="card__unit">
+    <img class="card__patch" src={vacancy.unitPatch} alt="" width="36" height="42" loading="lazy" />
+    <span class="card__unit-name">{vacancy.unit}</span>
+  </header>
+
+  <h3 class="card__role">{vacancy.role}</h3>
+
+  <!-- Сума — найбільший елемент картки, більший за назву посади. -->
+  <p class="card__salary data">
+    <span class="card__salary-prefix">від</span>
+    <span class="card__salary-value">{money(vacancy.salaryFrom)}</span>
+    <span class="card__salary-unit">₴/міс</span>
+  </p>
+
+  {vacancy.salaryNote && <p class="card__salary-note dim">{vacancy.salaryNote}</p>}
+
+  <dl class="card__strip data">
+    <div class="card__strip-cell">
+      <dt>Регіон</dt>
+      <dd>{vacancy.region}</dd>
+    </div>
+    <div class="card__strip-cell">
+      <dt>Тип</dt>
+      <dd>
+        <span class={`tag tag--${vacancy.type}`}>{typeLabel}</span>
+      </dd>
+    </div>
+    <div class="card__strip-cell">
+      <dt>Досвід</dt>
+      <dd>{vacancy.experienceRequired ? 'Потрібен' : 'Не потрібен'}</dd>
+    </div>
+    {vacancy.trainingDays && (
+      <div class="card__strip-cell">
+        <dt>Навчання</dt>
+        <dd>{vacancy.trainingDays} діб</dd>
+      </div>
+    )}
+  </dl>
+
+  <!-- Принцип 8: дані або свіжі, або позначені. -->
+  <footer class="card__foot data dim">
+    Оновлено <time datetime={vacancy.updatedAt}>{shortDate(vacancy.updatedAt)}</time>
+  </footer>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3);
+    padding: var(--gap-5);
+    background: var(--field-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color .12s linear, background-color .12s linear;
+  }
+
+  .card:hover {
+    border-color: var(--line-strong);
+    background: var(--field-3);
+  }
+
+  .card:focus-within {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+  }
+
+  /* Уся картка клікабельна, але в розмітці лишається одне посилання. */
+  .card__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .card__link:focus-visible { outline: none; }
+
+  .card__unit {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-3);
+    min-height: 42px;
+  }
+
+  .card__patch {
+    width: 36px;
+    height: 42px;
+    flex: none;
+  }
+
+  .card__unit-name {
+    font-size: 13px;
+    line-height: 1.3;
+    color: var(--canvas-dim);
+  }
+
+  .card__role {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .card__salary {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+    color: var(--signal);
+  }
+
+  .card__salary-prefix,
+  .card__salary-unit {
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .card__salary-value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
+  }
+
+  .card__salary-note {
+    font-size: 12px;
+    line-height: 1.35;
+    margin-top: -6px;
+  }
+
+  .card__strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-2) var(--gap-4);
+    margin: 0;
+    padding-top: var(--gap-3);
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+  }
+
+  .card__strip dt {
+    color: var(--canvas-dim);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .card__strip dd {
+    margin: 0;
+    line-height: 1.35;
+  }
+
+  .card__foot {
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+</style>

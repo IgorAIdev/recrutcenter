@@ -1,4 +1,7 @@
-name: Deploy prototype to GitHub Pages
+name: Build and publish prototype
+
+# Публікація йде через гілку gh-pages, а не через Pages API:
+# GITHUB_TOKEN не має права створювати Pages-сайт, а на пуш у гілку — має.
 
 on:
   push:
@@ -8,16 +11,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: gh-pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,27 +30,23 @@ jobs:
 
       - run: npm ci
 
-      - id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
-      # Прототип лежить не в корені домену, а в /<repo>/ — звідси base.
+      # Прототип лежить не в корені домену, а в /recrutcenter/ — звідси base.
       - run: npm run build
         env:
-          SITE: ${{ steps.pages.outputs.origin }}
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SITE: https://igoraidev.github.io
+          BASE_PATH: /recrutcenter
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
+      # Без .nojekyll Pages ховає теки, що починаються з підкреслення (_astro).
+      - run: touch dist/.nojekyll
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish to gh-pages
+        working-directory: dist
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Публікація зібраного прототипу: ${GITHUB_SHA:0:7}"
+          git push -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages

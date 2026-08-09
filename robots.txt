@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /recrutcenter/variant-b
+
+Sitemap: https://igoraidev.github.io/recrutcenter/sitemap.xml

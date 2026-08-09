@@ -1,0 +1,139 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import VacancyCard from '../../components/VacancyCard.astro';
+import type { Vacancy } from '../../data/types';
+import { vacancies } from '../../data/taxonomy';
+import { money, plural, positions } from '../../lib/format';
+import { withBase } from '../../lib/paths';
+
+/**
+ * Хаб за професією: одна сильна сторінка «Оператор БпЛА» замість двадцяти
+ * карток, які конкурують між собою у видачі. Людина шукає роботу, а не бригаду.
+ */
+export function getStaticPaths() {
+  const groups = new Map<string, Vacancy[]>();
+  for (const vacancy of vacancies) {
+    const list = groups.get(vacancy.roleGroup) ?? [];
+    list.push(vacancy);
+    groups.set(vacancy.roleGroup, list);
+  }
+
+  return [...groups.entries()].map(([group, list]) => ({
+    params: { group },
+    props: { group, list },
+  }));
+}
+
+type Props = { group: string; list: Vacancy[] };
+
+const { list } = Astro.props;
+
+const role = list[0]!.role;
+const sorted = [...list].sort((a, b) => b.salaryFrom - a.salaryFrom);
+const minSalary = Math.min(...list.map((item) => item.salaryFrom));
+const regions = [...new Set(list.map((item) => item.region))];
+const noExperience = list.filter((item) => !item.experienceRequired).length;
+const training = list.map((item) => item.trainingDays ?? 0).filter(Boolean);
+
+const title = `${role} у ЗСУ — ${list.length} ${positions(list.length)} — Центр рекрутингу`;
+const description = `Посада «${role}» у підрозділах ЗСУ: ${list.length} ${positions(list.length)} у регіонах ${regions.join(', ')}. Виплата від ${money(minSalary)} ₴ на місяць, навчання від ${Math.min(...training)} діб.`;
+---
+
+<Base title={title} description={description}>
+  <div class="shell">
+    <Breadcrumbs
+      items={[{ label: 'Вакансії', href: withBase('/vacancies') }, { label: role }]}
+    />
+  </div>
+
+  <section class="hub">
+    <div class="shell">
+      <h1 class="hub__title">{role}</h1>
+      <p class="hub__lead dim">{description}</p>
+
+      <dl class="hub__facts data">
+        <div class="hub__cell">
+          <dt>Відкритих позицій</dt>
+          <dd>{list.length}</dd>
+        </div>
+        <div class="hub__cell">
+          <dt>Виплата від</dt>
+          <dd class="hub__salary">{money(minSalary)} ₴</dd>
+        </div>
+        <div class="hub__cell">
+          <dt>Регіонів</dt>
+          <dd>{regions.length}</dd>
+        </div>
+        <div class="hub__cell">
+          <dt>Без досвіду</dt>
+          <dd>{noExperience} {plural(noExperience, ['позиція', 'позиції', 'позицій'])}</dd>
+        </div>
+      </dl>
+
+      <div class="hub__grid">
+        {sorted.map((vacancy) => <VacancyCard vacancy={vacancy} />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hub { padding-block: var(--gap-5) clamp(48px, 8vw, 96px); }
+
+  .hub__title {
+    font-size: clamp(34px, 6vw, 64px);
+  }
+
+  .hub__lead {
+    max-width: 64ch;
+    margin-top: var(--gap-3);
+    font-size: clamp(15px, 2vw, 17px);
+  }
+
+  .hub__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    margin: var(--gap-6) 0;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .hub__cell {
+    padding: var(--gap-4);
+    background: var(--field-2);
+  }
+
+  .hub__facts dt {
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--canvas-dim);
+    margin-bottom: 6px;
+  }
+
+  .hub__facts dd {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .hub__salary { color: var(--signal); }
+
+  .hub__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-4);
+  }
+
+  @media (max-width: 980px) {
+    .hub__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 640px) {
+    .hub__grid { grid-template-columns: 1fr; }
+  }
+</style>

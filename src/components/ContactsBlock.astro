@@ -4,7 +4,7 @@ import offices from '../data/offices.json';
 // Адреси беруться з довідника центру. Поки address === null, блок пише про це
 // прямо, а не показує вигадану адресу військового об'єкта.
 const telHref = `tel:${offices.hotline.replace(/\s/g, '')}`;
-const pendingAddresses = offices.offices.every((office) => office.address === null);
+const pendingAddresses = offices.offices.some((office) => office.address === null);
 ---
 
 <section class="section" id="kontakty">
@@ -36,6 +36,17 @@ const pendingAddresses = offices.offices.every((office) => office.address === nu
         </p>
         <p class="hotline__note dim">Щодня з 08:00 до 20:00, дзвінки безкоштовні.</p>
 
+        <p class="eyebrow hotline__eyebrow">Пошта</p>
+        <p class="hotline__links">
+          <a class="hotline__link" href={`mailto:${offices.email}`}>{offices.email}</a>
+        </p>
+        {offices.emailNeedsMigration && (
+          <p class="hotline__pending data">
+            Пошту треба перенести на домен .mil.gov.ua: gmail на офіційному ресурсі
+            читається як привід для сумніву
+          </p>
+        )}
+
         <p class="eyebrow hotline__eyebrow">Месенджери</p>
         <p class="hotline__links">
           {offices.messengers.map((messenger) => (
@@ -47,8 +58,8 @@ const pendingAddresses = offices.offices.every((office) => office.address === nu
 
     {pendingAddresses && (
       <p class="contacts__note data">
-        Адреси представництв підставляються з
-        <span class="dim"> src/data/offices.json</span> — заповнити з довідника центру
+        Адреси Сум і Харкова на сайті центру вказані без вулиці — заповнити з
+        довідника у <span class="dim">src/data/offices.json</span>
       </p>
     )}
   </div>
@@ -117,6 +128,13 @@ const pendingAddresses = offices.offices.every((office) => office.address === nu
   }
 
   .hotline__eyebrow { margin-top: var(--gap-5); }
+
+  .hotline__pending {
+    margin-top: var(--gap-2);
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--combat);
+  }
 
   .hotline__links {
     display: flex;

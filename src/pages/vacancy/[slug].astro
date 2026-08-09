@@ -1,0 +1,393 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import VacancyCard from '../../components/VacancyCard.astro';
+import type { Vacancy } from '../../data/types';
+import { vacancies, familyOf, families } from '../../data/taxonomy';
+import { money, shortDate } from '../../lib/format';
+import { withBase } from '../../lib/paths';
+
+export function getStaticPaths() {
+  return vacancies.map((vacancy) => ({
+    params: { slug: vacancy.slug },
+    props: { vacancy },
+  }));
+}
+
+type Props = { vacancy: Vacancy };
+
+const { vacancy } = Astro.props;
+
+const typeLabel = vacancy.type === 'combat' ? 'Бойова посада' : 'Забезпечення і тил';
+const familyId = familyOf(vacancy);
+const family = families.find((item) => item.id === familyId);
+
+// Схожі позиції: та сама професія в інших підрозділах — це і є цінність хабу.
+const similar = vacancies
+  .filter((item) => item.roleGroup === vacancy.roleGroup && item.id !== vacancy.id)
+  .slice(0, 3);
+
+// <title> — посада + підрозділ + регіон. description — з поля summary, не константа.
+const title = `${vacancy.role} — ${vacancy.unit}, ${vacancy.region} — Центр рекрутингу ЗСУ`;
+
+const jobLd = {
+  '@context': 'https://schema.org',
+  '@type': 'JobPosting',
+  title: vacancy.role,
+  description: [vacancy.summary, ...vacancy.duties].join(' '),
+  datePosted: vacancy.updatedAt,
+  employmentType: 'FULL_TIME',
+  directApply: true,
+  hiringOrganization: {
+    '@type': 'Organization',
+    name: vacancy.unit,
+    parentOrganization: {
+      '@type': 'GovernmentOrganization',
+      name: 'Збройні Сили України',
+    },
+  },
+  jobLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressRegion: vacancy.region,
+      addressCountry: 'UA',
+    },
+  },
+  baseSalary: {
+    '@type': 'MonetaryAmount',
+    currency: 'UAH',
+    value: {
+      '@type': 'QuantitativeValue',
+      minValue: vacancy.salaryFrom,
+      unitText: 'MONTH',
+    },
+  },
+  experienceRequirements: vacancy.experienceRequired
+    ? { '@type': 'OccupationalExperienceRequirements', monthsOfExperience: 12 }
+    : undefined,
+};
+---
+
+<Base title={title} description={vacancy.summary}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(jobLd)} />
+
+  <div class="shell">
+    <Breadcrumbs
+      items={[
+        { label: 'Вакансії', href: withBase('/vacancies') },
+        ...(family ? [{ label: family.label, href: withBase(`/profession/${vacancy.roleGroup}`) }] : []),
+        { label: vacancy.role },
+      ]}
+    />
+  </div>
+
+  <article class="vacancy">
+    <div class="shell vacancy__inner">
+      <header class="vacancy__head">
+        <p class="vacancy__unit">
+          <img class="vacancy__patch" src={withBase(vacancy.unitPatch)} alt="" width="48" height="56" />
+          <span>{vacancy.unit}</span>
+        </p>
+
+        <h1 class="vacancy__title">{vacancy.role}</h1>
+        <p class="vacancy__summary">{vacancy.summary}</p>
+
+        <p class="vacancy__salary data">
+          <span class="vacancy__salary-prefix">від</span>
+          <span class="vacancy__salary-value">{money(vacancy.salaryFrom)}</span>
+          <span class="vacancy__salary-unit">₴ / місяць</span>
+        </p>
+        {vacancy.salaryNote && <p class="vacancy__salary-note dim">{vacancy.salaryNote}</p>}
+
+        <dl class="facts data">
+          <div class="facts__cell">
+            <dt>Регіон служби</dt>
+            <dd>{vacancy.region}</dd>
+          </div>
+          <div class="facts__cell">
+            <dt>Тип посади</dt>
+            <dd><span class={`tag tag--${vacancy.type}`}>{typeLabel}</span></dd>
+          </div>
+          <div class="facts__cell">
+            <dt>Досвід</dt>
+            <dd>{vacancy.experienceRequired ? 'Потрібен' : 'Не потрібен'}</dd>
+          </div>
+          {vacancy.trainingDays && (
+            <div class="facts__cell">
+              <dt>Навчання</dt>
+              <dd>{vacancy.trainingDays} діб</dd>
+            </div>
+          )}
+          <div class="facts__cell">
+            <dt>Оновлено</dt>
+            <dd><time datetime={vacancy.updatedAt}>{shortDate(vacancy.updatedAt)}</time></dd>
+          </div>
+        </dl>
+      </header>
+
+      <div class="vacancy__body">
+        <div class="vacancy__text">
+          <section class="lists">
+            <h2 class="lists__title">Обов'язки</h2>
+            <ul class="lists__items">
+              {vacancy.duties.map((duty) => <li>{duty}</li>)}
+            </ul>
+          </section>
+
+          <section class="lists">
+            <h2 class="lists__title">Вимоги</h2>
+            <ul class="lists__items">
+              {vacancy.requirements.map((requirement) => <li>{requirement}</li>)}
+            </ul>
+          </section>
+
+          <!-- Загальні умови служби однакові для всіх посад і винесені окремо:
+               так у каталозі не з'являються дублі контенту. -->
+          <p class="vacancy__conditions dim">
+            Загальні умови служби, виплати та гарантії — на сторінці{' '}
+            <a href={withBase('/conditions')}>«Умови служби»</a>.
+          </p>
+        </div>
+
+        <aside class="apply" id="zayavka">
+          <h2 class="apply__title">Заявка</h2>
+          <p class="apply__note dim">
+            Дві хвилини. Документи зараз не потрібні — рекрутер зателефонує
+            протягом доби й пояснить наступний крок.
+          </p>
+
+          <form class="apply__form" method="post" action={withBase('/apply')}>
+            <input type="hidden" name="vacancy" value={vacancy.slug} />
+
+            <label class="apply__field">
+              <span class="eyebrow">Ім'я</span>
+              <input type="text" name="name" autocomplete="name" required />
+            </label>
+
+            <label class="apply__field">
+              <span class="eyebrow">Телефон</span>
+              <input type="tel" name="phone" autocomplete="tel" placeholder="+380" required />
+            </label>
+
+            <label class="apply__field">
+              <span class="eyebrow">Місто</span>
+              <input type="text" name="city" autocomplete="address-level2" />
+            </label>
+
+            <button class="btn btn--action" type="submit">Подати заявку</button>
+          </form>
+
+          <p class="apply__pending data">
+            Прототип: приймання заявок вмикається разом із бекендом центру
+          </p>
+        </aside>
+      </div>
+
+      {similar.length > 0 && (
+        <section class="similar">
+          <h2 class="similar__title">Ця сама посада в інших підрозділах</h2>
+          <div class="similar__grid">
+            {similar.map((item) => <VacancyCard vacancy={item} />)}
+          </div>
+        </section>
+      )}
+    </div>
+  </article>
+</Base>
+
+<style>
+  .vacancy { padding-block: var(--gap-5) clamp(48px, 8vw, 96px); }
+
+  .vacancy__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-7);
+  }
+
+  .vacancy__unit {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-3);
+    font-size: 14px;
+    color: var(--canvas-dim);
+  }
+
+  .vacancy__patch { flex: none; }
+
+  .vacancy__title {
+    font-size: clamp(32px, 6vw, 62px);
+    margin-block: var(--gap-3) var(--gap-3);
+  }
+
+  .vacancy__summary {
+    max-width: 62ch;
+    font-size: clamp(16px, 2vw, 18px);
+    color: var(--canvas-dim);
+  }
+
+  .vacancy__salary {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--gap-2);
+    margin-top: var(--gap-5);
+    color: var(--signal);
+  }
+
+  .vacancy__salary-prefix,
+  .vacancy__salary-unit { font-size: 15px; }
+
+  .vacancy__salary-value {
+    font-size: clamp(38px, 6vw, 56px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+
+  .vacancy__salary-note {
+    font-size: 13px;
+    margin-top: var(--gap-2);
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    margin: var(--gap-5) 0 0;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .facts__cell {
+    padding: var(--gap-4);
+    background: var(--field-2);
+  }
+
+  .facts dt {
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--canvas-dim);
+    margin-bottom: 6px;
+  }
+
+  .facts dd {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .vacancy__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+    gap: var(--gap-6);
+    align-items: start;
+  }
+
+  .vacancy__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-6);
+  }
+
+  .lists__title {
+    font-size: 20px;
+    margin-bottom: var(--gap-3);
+  }
+
+  .lists__items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3);
+    max-width: 62ch;
+  }
+
+  .lists__items li {
+    position: relative;
+    padding-left: var(--gap-4);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .lists__items li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: .6em;
+    width: 6px;
+    height: 6px;
+    background: var(--line-strong);
+  }
+
+  .vacancy__conditions { font-size: 14px; }
+
+  .apply {
+    position: sticky;
+    top: 88px;
+    padding: var(--gap-5);
+    background: var(--field-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .apply__title { font-size: 22px; }
+
+  .apply__note {
+    font-size: 13px;
+    line-height: 1.45;
+    margin-top: var(--gap-2);
+  }
+
+  .apply__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3);
+    margin-top: var(--gap-4);
+  }
+
+  .apply__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .apply__field input {
+    padding: 12px 14px;
+    background: var(--field);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    font-size: 16px;
+  }
+
+  .apply__field input:hover { border-color: var(--canvas-dim); }
+
+  .apply__form .btn { margin-top: var(--gap-2); }
+
+  .apply__pending {
+    margin-top: var(--gap-3);
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--combat);
+  }
+
+  .similar__title {
+    font-size: clamp(22px, 3vw, 30px);
+    margin-bottom: var(--gap-4);
+  }
+
+  .similar__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-4);
+  }
+
+  @media (max-width: 900px) {
+    .vacancy__body { grid-template-columns: 1fr; }
+    .apply { position: static; }
+    .similar__grid { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,33 +1,8 @@
 ---
-import FilterChips from './FilterChips.astro';
-import {
-  families,
-  countByFamily,
-  regionGroups,
-  vacancyTypes,
-  vacancies,
-  countBy,
-  lastUpdatedAt,
-} from '../data/taxonomy';
+import FilterControls from './FilterControls.astro';
+import { vacancies, lastUpdatedAt } from '../data/taxonomy';
 import { positions, shortDate } from '../lib/format';
 import { withBase } from '../lib/paths';
-
-const familyCounts = countByFamily();
-const regionCounts = countBy('regionGroup');
-const typeCounts = countBy('type');
-
-// У фільтр потрапляють лише родини, в яких справді є позиції.
-const familyOptions = families
-  .map((family) => ({ ...family, count: familyCounts.get(family.id) ?? 0 }))
-  .filter((family) => family.count > 0);
-
-const regionOptions = regionGroups
-  .map((region) => ({ value: region.id, label: region.label, count: regionCounts.get(region.id) ?? 0 }))
-  .filter((region) => region.count > 0);
-
-const typeOptions = vacancyTypes
-  .map((type) => ({ value: type.id, label: type.label, count: typeCounts.get(type.id) ?? 0 }))
-  .filter((type) => type.count > 0);
 
 const total = vacancies.length;
 const updatedAt = lastUpdatedAt();
@@ -48,31 +23,7 @@ const updatedAt = lastUpdatedAt();
     </p>
 
     <form class="picker" id="picker" action={withBase("/vacancies")} method="get">
-      <div class="picker__row">
-        <label class="field">
-          <span class="field__label eyebrow">Спеціальність</span>
-          <select class="field__control" name="family" data-filter="family">
-            <option value="">Будь-яка</option>
-            {familyOptions.map((family) => (
-              <option value={family.id}>{family.label} — {family.count}</option>
-            ))}
-          </select>
-        </label>
-
-        <label class="field">
-          <span class="field__label eyebrow">Напрямок</span>
-          <select class="field__control" name="region" data-filter="region">
-            <option value="">Будь-який</option>
-            {regionOptions.map((region) => (
-              <option value={region.value}>{region.label} — {region.count}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <FilterChips name="type" legend="Тип посади" options={typeOptions} />
-      <!-- Чипи — не поле форми, тому їхнє значення дублюється сюди для GET-переходу. -->
-      <input type="hidden" name="type" value="" data-filter-mirror="type" />
+      <FilterControls />
 
       <div class="picker__result">
         <!-- Єдина анімація на екрані: перерахунок лічильника при виборі. -->
@@ -131,38 +82,6 @@ const updatedAt = lastUpdatedAt();
     gap: var(--gap-5);
   }
 
-  .picker__row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--gap-4);
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-2);
-    min-width: 0;
-  }
-
-  .field__control {
-    appearance: none;
-    width: 100%;
-    padding: 12px 40px 12px 14px;
-    background: var(--field);
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    font-size: 16px;
-    line-height: 1.2;
-    cursor: pointer;
-    background-image: linear-gradient(45deg, transparent 50%, var(--canvas-dim) 50%),
-      linear-gradient(135deg, var(--canvas-dim) 50%, transparent 50%);
-    background-position: right 18px center, right 12px center;
-    background-size: 6px 6px, 6px 6px;
-    background-repeat: no-repeat;
-  }
-
-  .field__control:hover { border-color: var(--canvas-dim); }
-
   .picker__result {
     display: flex;
     flex-wrap: wrap;
@@ -199,7 +118,6 @@ const updatedAt = lastUpdatedAt();
 
   @media (max-width: 620px) {
     .picker { padding: var(--gap-4); }
-    .picker__row { grid-template-columns: 1fr; }
     .picker__result { align-items: stretch; }
     .picker__result .btn { width: 100%; }
   }

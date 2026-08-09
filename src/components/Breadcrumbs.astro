@@ -1,0 +1,69 @@
+---
+import { withBase } from '../lib/paths';
+
+/**
+ * Кожна сторінка — точка входу, а не глава книги: з пошуку людина потрапляє
+ * на картку вакансії. Навігація вгору — крихтами, з розміткою BreadcrumbList.
+ */
+type Crumb = { label: string; href?: string };
+
+type Props = { items: Crumb[] };
+
+const { items } = Astro.props;
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.label,
+    ...(item.href ? { item: new URL(item.href, Astro.site).href } : {}),
+  })),
+};
+---
+
+<nav class="crumbs" aria-label="Хлібні крихти">
+  <ol class="crumbs__list data">
+    <li><a href={withBase('/')}>Головна</a></li>
+    {items.map((item) => (
+      <li>
+        {item.href ? <a href={item.href}>{item.label}</a> : <span aria-current="page">{item.label}</span>}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(ld)} />
+
+<style>
+  .crumbs {
+    padding-block: var(--gap-4) 0;
+  }
+
+  .crumbs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    color: var(--canvas-dim);
+  }
+
+  .crumbs__list li + li::before {
+    content: '/';
+    margin-right: var(--gap-2);
+    color: var(--line-strong);
+  }
+
+  .crumbs__list a {
+    color: var(--canvas-dim);
+    text-decoration: none;
+  }
+
+  .crumbs__list a:hover { color: var(--signal); }
+
+  .crumbs__list [aria-current] { color: var(--canvas); }
+</style>

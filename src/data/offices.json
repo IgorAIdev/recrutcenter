@@ -1,16 +1,20 @@
 {
-  "_comment": "Адреси й графіки представництв беруться з довідника центру — поки не заповнені, компонент сам показує це замість вигаданих даних. Телефон гарячої лінії теж заглушка.",
-  "hotline": "0 800 000 000",
+  "_comment": "Контакти взяті з чинного сайту центру lfrecruiting.mil.gov.ua. Адреси Сум і Харкова там вказані без вулиці — лишаємо порожніми, компонент сам це підпише. Пошту треба замінити на домен .mil.gov.ua: gmail на офіційному ресурсі підриває довіру і суперечить принципу «персональні дані не покидають контур».",
+  "source": "lfrecruiting.mil.gov.ua",
+  "checkedAt": "2026-08-09",
+  "hotline": "0 800 503 696",
+  "email": "crekrutingu@gmail.com",
+  "emailNeedsMigration": true,
   "messengers": [
-    { "label": "Telegram", "href": "https://t.me/" },
-    { "label": "Viber", "href": "viber://chat" }
+    { "label": "WhatsApp", "href": "https://wa.me/380979023089" },
+    { "label": "Telegram", "href": "https://t.me/" }
   ],
   "offices": [
-    { "city": "Київ", "address": null },
-    { "city": "Дніпро", "address": null },
-    { "city": "Одеса", "address": null },
-    { "city": "Львів", "address": null },
-    { "city": "Тернопіль", "address": null },
+    { "city": "Київ", "address": "вул. Ольжича, 10а" },
+    { "city": "Дніпро", "address": "пл. Вокзальна, 11" },
+    { "city": "Одеса", "address": "пл. Привокзальна, 2" },
+    { "city": "Львів", "address": "пл. Двірцева, 1" },
+    { "city": "Тернопіль", "address": "Привокзальний майдан, 1" },
     { "city": "Суми", "address": null },
     { "city": "Харків", "address": null }
   ]

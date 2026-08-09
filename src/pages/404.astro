@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import { withBase } from '../lib/paths';
+
+// Сторінка потрібна не лише людині: nginx віддає її як fallback,
+// а без файлу try_files впирається у внутрішню помилку.
+const title = 'Сторінку не знайдено — Центр рекрутингу ЗСУ';
+const description = 'Такої сторінки немає. Перелік відкритих посад — у каталозі вакансій.';
+---
+
+<Base title={title} description={description}>
+  <meta slot="head" name="robots" content="noindex" />
+
+  <section class="notfound">
+    <div class="shell notfound__inner">
+      <p class="eyebrow data">404</p>
+      <h1 class="notfound__title">Сторінки немає</h1>
+      <p class="notfound__text dim">
+        Можливо, позицію вже закрито — ми знімаємо їх того ж дня. Подивіться,
+        що відкрито зараз.
+      </p>
+
+      <div class="notfound__actions">
+        <a class="btn btn--action" href={withBase('/vacancies')}>Усі вакансії</a>
+        <a class="btn btn--ghost" href={withBase('/')}>На головну</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .notfound {
+    padding-block: clamp(64px, 12vw, 160px);
+  }
+
+  .notfound__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gap-3);
+  }
+
+  .notfound__title {
+    font-size: clamp(38px, 8vw, 82px);
+  }
+
+  .notfound__text {
+    max-width: 46ch;
+    font-size: 16px;
+  }
+
+  .notfound__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-3);
+    margin-top: var(--gap-4);
+  }
+</style>

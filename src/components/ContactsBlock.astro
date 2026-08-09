@@ -1,0 +1,138 @@
+---
+import offices from '../data/offices.json';
+
+// Адреси беруться з довідника центру. Поки address === null, блок пише про це
+// прямо, а не показує вигадану адресу військового об'єкта.
+const telHref = `tel:${offices.hotline.replace(/\s/g, '')}`;
+const pendingAddresses = offices.offices.every((office) => office.address === null);
+---
+
+<section class="section" id="kontakty">
+  <div class="shell">
+    <div class="section-head">
+      <h2 class="section-title">Представництва і контакти</h2>
+      <p class="section-note">
+        Прийти можна без запису. Якщо у вашому місті представництва немає —
+        телефонуйте, оформлення можливе дистанційно.
+      </p>
+    </div>
+
+    <div class="contacts">
+      <ul class="offices">
+        {offices.offices.map((office) => (
+          <li class="office">
+            <h3 class="office__city">{office.city}</h3>
+            <p class="office__address dim data">
+              {office.address ?? 'Адресу та графік уточнюємо'}
+            </p>
+          </li>
+        ))}
+      </ul>
+
+      <aside class="hotline">
+        <p class="eyebrow">Гаряча лінія</p>
+        <p class="hotline__number data">
+          <a href={telHref}>{offices.hotline}</a>
+        </p>
+        <p class="hotline__note dim">Щодня з 08:00 до 20:00, дзвінки безкоштовні.</p>
+
+        <p class="eyebrow hotline__eyebrow">Месенджери</p>
+        <p class="hotline__links">
+          {offices.messengers.map((messenger) => (
+            <a class="hotline__link" href={messenger.href}>{messenger.label}</a>
+          ))}
+        </p>
+      </aside>
+    </div>
+
+    {pendingAddresses && (
+      <p class="contacts__note data">
+        Адреси представництв підставляються з
+        <span class="dim"> src/data/offices.json</span> — заповнити з довідника центру
+      </p>
+    )}
+  </div>
+</section>
+
+<style>
+  .contacts {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--gap-6);
+    align-items: start;
+  }
+
+  .offices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .office {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2);
+    padding: var(--gap-4);
+    background: var(--field-2);
+  }
+
+  .office__city {
+    font-size: 17px;
+    font-weight: 500;
+  }
+
+  .office__address {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .hotline {
+    padding: var(--gap-5);
+    background: var(--field-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .hotline__number {
+    margin: var(--gap-2) 0 var(--gap-2);
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+
+  .hotline__number a {
+    color: var(--signal);
+    text-decoration: none;
+  }
+
+  .hotline__note {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .hotline__eyebrow { margin-top: var(--gap-5); }
+
+  .hotline__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-3);
+    margin-top: var(--gap-2);
+    font-size: 14px;
+  }
+
+  .contacts__note {
+    margin-top: var(--gap-4);
+    font-size: 12px;
+    color: var(--combat);
+  }
+
+  @media (max-width: 900px) {
+    .contacts { grid-template-columns: 1fr; }
+  }
+</style>

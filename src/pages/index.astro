@@ -4,6 +4,11 @@ import Hero from '../components/Hero.astro';
 import PayBlock from '../components/PayBlock.astro';
 import PathTiles from '../components/PathTiles.astro';
 import WhyBlock from '../components/WhyBlock.astro';
+import StepsBlock from '../components/StepsBlock.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import StoriesBlock from '../components/StoriesBlock.astro';
+import UnitsGrid from '../components/UnitsGrid.astro';
+import ContactsBlock from '../components/ContactsBlock.astro';
 import VacancyCard from '../components/VacancyCard.astro';
 import { vacancies, lastUpdatedAt } from '../data/taxonomy';
 import { positions, shortDate } from '../lib/format';
@@ -84,6 +89,21 @@ const organizationLd = {
 
   <!-- 5. Чому через центр — перевірювані зобов'язання -->
   <WhyBlock />
+
+  <!-- 6. Як це відбувається — зняття невизначеності -->
+  <StepsBlock />
+
+  <!-- 7. Відповіді на страхи — FAQ із розміткою FAQPage -->
+  <FaqBlock />
+
+  <!-- 8. Історії — мотивація -->
+  <StoriesBlock />
+
+  <!-- 9. Підрозділи — вибір «з ким» -->
+  <UnitsGrid />
+
+  <!-- 10. Представництва і контакти -->
+  <ContactsBlock />
 </Base>
 
 <script>

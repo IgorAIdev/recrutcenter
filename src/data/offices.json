@@ -1,0 +1,17 @@
+{
+  "_comment": "Адреси й графіки представництв беруться з довідника центру — поки не заповнені, компонент сам показує це замість вигаданих даних. Телефон гарячої лінії теж заглушка.",
+  "hotline": "0 800 000 000",
+  "messengers": [
+    { "label": "Telegram", "href": "https://t.me/" },
+    { "label": "Viber", "href": "viber://chat" }
+  ],
+  "offices": [
+    { "city": "Київ", "address": null },
+    { "city": "Дніпро", "address": null },
+    { "city": "Одеса", "address": null },
+    { "city": "Львів", "address": null },
+    { "city": "Тернопіль", "address": null },
+    { "city": "Суми", "address": null },
+    { "city": "Харків", "address": null }
+  ]
+}

@@ -1,0 +1,114 @@
+---
+import stories from '../data/stories.json';
+
+// Приоритет: друга ітерація. Тут — структура з плейсхолдерами,
+// щоб контент-менеджер міг заповнити, не чіпаючи розмітку.
+const filled = stories.items.filter((item) => item.published);
+const cards = filled.length > 0 ? filled : stories.items;
+const isPlaceholder = filled.length === 0;
+---
+
+<section class="section" id="istorii">
+  <div class="shell">
+    <div class="section-head">
+      <h2 class="section-title">Історії переходів</h2>
+      <p class="section-note">
+        Ким були до служби й ким стали. Найчастіший страх кандидата — «я не
+        підходжу»; ці історії відповідають на нього конкретикою.
+      </p>
+    </div>
+
+    <ul class="stories">
+      {cards.map((story) => (
+        <li class="story">
+          <div class="story__photo" aria-hidden="true">
+            <span class="story__photo-note data">{isPlaceholder ? 'Фото' : ''}</span>
+          </div>
+          <p class="story__transition data">
+            <span class="story__from dim">{story.was}</span>
+            <span class="story__arrow" aria-hidden="true">→</span>
+            <span class="story__to">{story.became}</span>
+          </p>
+          <p class="story__where dim">{story.unit}</p>
+          <p class="story__quote">{story.quote}</p>
+        </li>
+      ))}
+    </ul>
+
+    {isPlaceholder && (
+      <p class="stories__note data">
+        Структура блока готова, тексти й фото заповнює контент-менеджер у
+        <span class="dim"> src/data/stories.json</span>
+      </p>
+    )}
+  </div>
+</section>
+
+<style>
+  .stories {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .story {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2);
+    padding: var(--gap-4);
+    background: var(--field-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .story__photo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 3;
+    margin-bottom: var(--gap-2);
+    background: var(--field-3);
+    border: 1px dashed var(--line-strong);
+  }
+
+  .story__photo-note {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--canvas-dim);
+  }
+
+  .story__transition {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--gap-2);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .story__arrow { color: var(--signal); }
+
+  .story__where {
+    font-size: 12px;
+  }
+
+  .story__quote {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: var(--gap-2);
+  }
+
+  .stories__note {
+    margin-top: var(--gap-4);
+    font-size: 12px;
+    color: var(--combat);
+  }
+
+  @media (max-width: 900px) {
+    .stories { grid-template-columns: 1fr; }
+  }
+</style>

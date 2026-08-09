@@ -70,6 +70,32 @@ export function countBy<K extends keyof Vacancy>(key: K, list: Vacancy[] = vacan
   return counts;
 }
 
+export type Unit = {
+  name: string;
+  slug: string;
+  patch: string;
+  openings: number;
+};
+
+/** Унікальні підрозділи з каталогу — без дублікатів у розмітці. */
+export function units(list: Vacancy[] = vacancies): Unit[] {
+  const map = new Map<string, Unit>();
+  for (const vacancy of list) {
+    const found = map.get(vacancy.unitSlug);
+    if (found) {
+      found.openings += 1;
+      continue;
+    }
+    map.set(vacancy.unitSlug, {
+      name: vacancy.unit,
+      slug: vacancy.unitSlug,
+      patch: vacancy.unitPatch,
+      openings: 1,
+    });
+  }
+  return [...map.values()].sort((a, b) => b.openings - a.openings);
+}
+
 /** Дата останнього оновлення каталогу — для рядка «дані станом на». */
 export function lastUpdatedAt(list: Vacancy[] = vacancies): string {
   return list.reduce((latest, vacancy) => (vacancy.updatedAt > latest ? vacancy.updatedAt : latest), '');

@@ -1,10 +1,18 @@
 ---
 import pay from '../data/pay.json';
-import { money, shortDate } from '../lib/format';
+import { money, shortDate, plural } from '../lib/format';
 
-// УВАГА: суми в pay.json — заглушка до погодження з командуванням.
-// Поки `approved: false`, блок показує позначку про попередні дані.
-const { tiers, approved, updatedAt } = pay;
+// Цифри — з чинного сайту центру, тобто вже опубліковані ним самим.
+// Джерело і дата звірки стоять у даних і виводяться внизу блока:
+// суми змінюються наказами, і мовчазно застаріла цифра гірша за її відсутність.
+const { contracts, source, checkedAt } = pay;
+
+function payLabel(from: number | null, to: number | null): string {
+  if (from && to) return `${money(from)} – ${money(to)}`;
+  if (to) return `до ${money(to)}`;
+  if (from) return `від ${money(from)}`;
+  return '—';
+}
 ---
 
 <section class="section" id="skilky-platiat">
@@ -12,29 +20,43 @@ const { tiers, approved, updatedAt } = pay;
     <div class="section-head">
       <h2 class="section-title">Скільки платять</h2>
       <p class="section-note">
-        Три базові рівні. Точна сума вказана в кожній вакансії окремо — разом із датою,
-        коли її востаннє звіряли зі штатним розписом.
+        Три види контракту за рівнем ризику. Точна сума вказана в кожній вакансії
+        окремо — разом із датою, коли її востаннє звіряли зі штатним розписом.
       </p>
     </div>
 
     <div class="pay">
-      {tiers.map((tier) => (
-        <article class="pay__tier">
-          <h3 class="pay__label">{tier.label}</h3>
+      {contracts.map((contract) => (
+        <article class={`pay__tier pay__tier--${contract.accent}`}>
+          <p class="pay__kicker eyebrow">{contract.kicker}</p>
+          <h3 class="pay__label">{contract.label}</h3>
+
           <p class="pay__amount data">
-            <span class="pay__from">від</span>
-            <span class="pay__value">{money(tier.amount)}</span>
+            <span class="pay__value">{payLabel(contract.payFrom, contract.payTo)}</span>
+            <span class="pay__unit">₴ / міс</span>
           </p>
-          <p class="pay__unit data dim">{tier.unit}</p>
-          <p class="pay__note dim">{tier.note}</p>
+
+          <dl class="pay__terms data">
+            <div>
+              <dt>Термін</dt>
+              <dd>{contract.termMonths} {plural(contract.termMonths, ['місяць', 'місяці', 'місяців'])}</dd>
+            </div>
+            <div>
+              <dt>Відстрочка</dt>
+              <dd>від {contract.deferralFromMonths} міс</dd>
+            </div>
+          </dl>
+
+          <p class="pay__text dim">{contract.text}</p>
+          <p class="pay__for dim">
+            <span class="pay__for-label">Для кого:</span> {contract.forWhom}
+          </p>
         </article>
       ))}
     </div>
 
     <p class="pay__foot data dim">
-      {approved
-        ? `Дані станом на ${shortDate(updatedAt)}`
-        : `Попередні дані станом на ${shortDate(updatedAt)} — на погодженні`}
+      Дані з {source}, звірено {shortDate(checkedAt)}
     </p>
   </div>
 </section>
@@ -55,46 +77,67 @@ const { tiers, approved, updatedAt } = pay;
     gap: var(--gap-2);
     padding: var(--gap-5);
     background: var(--field-2);
+    border-top: 2px solid var(--line-strong);
   }
 
+  /* Смуга зверху кодує рівень ризику — це єдине, що вона робить. */
+  .pay__tier--combat { border-top-color: var(--combat); }
+  .pay__tier--signal { border-top-color: var(--signal); }
+  .pay__tier--support { border-top-color: var(--support); }
+
   .pay__label {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--canvas-dim);
-    letter-spacing: .04em;
+    font-size: 24px;
+    font-weight: 600;
   }
 
   .pay__amount {
     display: flex;
     align-items: baseline;
+    flex-wrap: wrap;
     gap: var(--gap-2);
+    margin-top: var(--gap-3);
     color: var(--signal);
-    margin-top: var(--gap-2);
-  }
-
-  .pay__from {
-    font-size: 14px;
-    font-weight: 400;
   }
 
   .pay__value {
-    font-size: clamp(30px, 4.4vw, 46px);
+    font-size: clamp(24px, 3.2vw, 34px);
     font-weight: 700;
     line-height: 1;
     letter-spacing: -.03em;
   }
 
-  .pay__unit {
-    font-size: 13px;
-    letter-spacing: .04em;
+  .pay__unit { font-size: 13px; }
+
+  .pay__terms {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-3);
+    margin: var(--gap-4) 0 var(--gap-2);
+    padding: var(--gap-3) 0;
+    border-block: 1px solid var(--line);
   }
 
-  .pay__note {
+  .pay__terms dt {
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--canvas-dim);
+    margin-bottom: 4px;
+  }
+
+  .pay__terms dd {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .pay__text,
+  .pay__for {
     font-size: 13px;
     line-height: 1.45;
-    margin-top: var(--gap-2);
-    max-width: 34ch;
   }
+
+  .pay__for-label { color: var(--canvas); }
 
   .pay__foot {
     margin-top: var(--gap-4);

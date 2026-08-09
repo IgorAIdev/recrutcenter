@@ -1,0 +1,93 @@
+---
+/**
+ * Група фільтрів-чипів. Стан тримається в одному місці (див. scripts/filters.ts)
+ * і синхронізується між усіма групами з однаковим `name` на сторінці.
+ */
+type Option = { value: string; label: string; count?: number };
+
+type Props = {
+  name: string;
+  legend: string;
+  options: Option[];
+  allLabel?: string;
+  /** Візуально сховати підпис групи, лишивши його для читалок. */
+  hideLegend?: boolean;
+};
+
+const { name, legend, options, allLabel = 'Усі', hideLegend = false } = Astro.props;
+
+const all: Option[] = [{ value: '', label: allLabel }, ...options];
+---
+
+<fieldset class="chips" data-filter-group={name}>
+  <legend class={hideLegend ? 'visually-hidden' : 'chips__legend eyebrow'}>{legend}</legend>
+
+  <div class="chips__row">
+    {all.map((option) => (
+      <button
+        type="button"
+        class="chip"
+        data-filter={name}
+        data-value={option.value}
+        aria-pressed={option.value === '' ? 'true' : 'false'}
+      >
+        {option.label}
+        {option.count !== undefined && <span class="chip__count data">{option.count}</span>}
+      </button>
+    ))}
+  </div>
+</fieldset>
+
+<style>
+  .chips {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  .chips__legend {
+    display: block;
+    margin-bottom: var(--gap-2);
+    padding: 0;
+  }
+
+  .chips__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-2);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--canvas-dim);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 14px;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: color .12s linear, border-color .12s linear, background-color .12s linear;
+  }
+
+  .chip:hover {
+    color: var(--canvas);
+    border-color: var(--line-strong);
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--field-3);
+    color: var(--canvas);
+    border-color: var(--line-strong);
+  }
+
+  .chip__count {
+    font-size: 11px;
+    color: var(--canvas-dim);
+  }
+
+  .chip[aria-pressed='true'] .chip__count { color: var(--canvas); }
+</style>

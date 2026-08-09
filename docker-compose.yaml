@@ -1,0 +1,21 @@
+# Для розгортання через Coolify з Build Pack «Docker Compose».
+# Сайт статичний: збірка відбувається в Dockerfile, назовні йде nginx.
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Замінити на бойовий домен — з нього формуються canonical і og:url.
+        SITE: ${SITE:-https://lfrecruiting.mil.gov.ua}
+    restart: unless-stopped
+    expose:
+      - '80'
+    environment:
+      # Coolify підставляє сюди домен застосунку і сам проксіює на порт 80.
+      SERVICE_FQDN_WEB_80: ${SERVICE_FQDN_WEB_80:-}
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost/']
+      interval: 30s
+      timeout: 5s
+      retries: 3

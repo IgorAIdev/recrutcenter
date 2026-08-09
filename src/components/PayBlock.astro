@@ -1,0 +1,108 @@
+---
+import pay from '../data/pay.json';
+import { money, shortDate } from '../lib/format';
+
+// УВАГА: суми в pay.json — заглушка до погодження з командуванням.
+// Поки `approved: false`, блок показує позначку про попередні дані.
+const { tiers, approved, updatedAt } = pay;
+---
+
+<section class="section" id="skilky-platiat">
+  <div class="shell">
+    <div class="section-head">
+      <h2 class="section-title">Скільки платять</h2>
+      <p class="section-note">
+        Три базові рівні. Точна сума вказана в кожній вакансії окремо — разом із датою,
+        коли її востаннє звіряли зі штатним розписом.
+      </p>
+    </div>
+
+    <div class="pay">
+      {tiers.map((tier) => (
+        <article class="pay__tier">
+          <h3 class="pay__label">{tier.label}</h3>
+          <p class="pay__amount data">
+            <span class="pay__from">від</span>
+            <span class="pay__value">{money(tier.amount)}</span>
+          </p>
+          <p class="pay__unit data dim">{tier.unit}</p>
+          <p class="pay__note dim">{tier.note}</p>
+        </article>
+      ))}
+    </div>
+
+    <p class="pay__foot data dim">
+      {approved
+        ? `Дані станом на ${shortDate(updatedAt)}`
+        : `Попередні дані станом на ${shortDate(updatedAt)} — на погодженні`}
+    </p>
+  </div>
+</section>
+
+<style>
+  .pay {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .pay__tier {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2);
+    padding: var(--gap-5);
+    background: var(--field-2);
+  }
+
+  .pay__label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--canvas-dim);
+    letter-spacing: .04em;
+  }
+
+  .pay__amount {
+    display: flex;
+    align-items: baseline;
+    gap: var(--gap-2);
+    color: var(--signal);
+    margin-top: var(--gap-2);
+  }
+
+  .pay__from {
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .pay__value {
+    font-size: clamp(30px, 4.4vw, 46px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+
+  .pay__unit {
+    font-size: 13px;
+    letter-spacing: .04em;
+  }
+
+  .pay__note {
+    font-size: 13px;
+    line-height: 1.45;
+    margin-top: var(--gap-2);
+    max-width: 34ch;
+  }
+
+  .pay__foot {
+    margin-top: var(--gap-4);
+    font-size: 12px;
+    letter-spacing: .04em;
+  }
+
+  @media (max-width: 860px) {
+    .pay { grid-template-columns: 1fr; }
+  }
+</style>

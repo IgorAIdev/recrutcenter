@@ -1,0 +1,206 @@
+---
+import FilterChips from './FilterChips.astro';
+import {
+  families,
+  countByFamily,
+  regionGroups,
+  vacancyTypes,
+  vacancies,
+  countBy,
+  lastUpdatedAt,
+} from '../data/taxonomy';
+import { positions, shortDate } from '../lib/format';
+import { withBase } from '../lib/paths';
+
+const familyCounts = countByFamily();
+const regionCounts = countBy('regionGroup');
+const typeCounts = countBy('type');
+
+// У фільтр потрапляють лише родини, в яких справді є позиції.
+const familyOptions = families
+  .map((family) => ({ ...family, count: familyCounts.get(family.id) ?? 0 }))
+  .filter((family) => family.count > 0);
+
+const regionOptions = regionGroups
+  .map((region) => ({ value: region.id, label: region.label, count: regionCounts.get(region.id) ?? 0 }))
+  .filter((region) => region.count > 0);
+
+const typeOptions = vacancyTypes
+  .map((type) => ({ value: type.id, label: type.label, count: typeCounts.get(type.id) ?? 0 }))
+  .filter((type) => type.count > 0);
+
+const total = vacancies.length;
+const updatedAt = lastUpdatedAt();
+---
+
+<section class="hero">
+  <div class="shell hero__inner">
+    <!-- Замість гасла — стан даних: перше, що доводить, що каталог живий. -->
+    <p class="eyebrow">
+      {total} відкритих {positions(total)} · оновлено {shortDate(updatedAt)}
+    </p>
+
+    <h1 class="hero__title">Обери свою посаду</h1>
+
+    <p class="hero__lead">
+      Спеціальність, підрозділ, регіон і сума виплати — видно до того, як подаси заявку.
+      Сама заявка — дві хвилини.
+    </p>
+
+    <form class="picker" id="picker" action={withBase("/vacancies")} method="get">
+      <div class="picker__row">
+        <label class="field">
+          <span class="field__label eyebrow">Спеціальність</span>
+          <select class="field__control" name="family" data-filter="family">
+            <option value="">Будь-яка</option>
+            {familyOptions.map((family) => (
+              <option value={family.id}>{family.label} — {family.count}</option>
+            ))}
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field__label eyebrow">Напрямок</span>
+          <select class="field__control" name="region" data-filter="region">
+            <option value="">Будь-який</option>
+            {regionOptions.map((region) => (
+              <option value={region.value}>{region.label} — {region.count}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <FilterChips name="type" legend="Тип посади" options={typeOptions} />
+      <!-- Чипи — не поле форми, тому їхнє значення дублюється сюди для GET-переходу. -->
+      <input type="hidden" name="type" value="" data-filter-mirror="type" />
+
+      <div class="picker__result">
+        <!-- Єдина анімація на екрані: перерахунок лічильника при виборі. -->
+        <p class="counter" aria-live="polite">
+          <span class="counter__value data" data-counter-value>{total}</span>
+          <span class="counter__word">
+            <span data-counter-word>{positions(total)}</span>
+            <span class="dim">за твоїм вибором</span>
+          </span>
+        </p>
+
+        <button class="btn btn--action" type="submit">Переглянути вакансії</button>
+      </div>
+    </form>
+
+    <p class="hero__quiz dim">
+      Не знаєш, з чого почати — <a href={withBase("/quiz")}>пройди тест</a> на три питання.
+    </p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: clamp(40px, 7vw, 88px) clamp(40px, 6vw, 72px);
+  }
+
+  .hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gap-4);
+  }
+
+  .hero__title {
+    font-size: clamp(46px, 11vw, 116px);
+    line-height: .92;
+    letter-spacing: .005em;
+    margin-block: var(--gap-2) var(--gap-3);
+  }
+
+  .hero__lead {
+    max-width: 52ch;
+    font-size: clamp(16px, 2vw, 19px);
+    color: var(--canvas-dim);
+  }
+
+  .picker {
+    width: 100%;
+    margin-top: var(--gap-4);
+    padding: var(--gap-5);
+    background: var(--field-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-5);
+  }
+
+  .picker__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-4);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2);
+    min-width: 0;
+  }
+
+  .field__control {
+    appearance: none;
+    width: 100%;
+    padding: 12px 40px 12px 14px;
+    background: var(--field);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    font-size: 16px;
+    line-height: 1.2;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--canvas-dim) 50%),
+      linear-gradient(135deg, var(--canvas-dim) 50%, transparent 50%);
+    background-position: right 18px center, right 12px center;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+  }
+
+  .field__control:hover { border-color: var(--canvas-dim); }
+
+  .picker__result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-4);
+    padding-top: var(--gap-5);
+    border-top: 1px solid var(--line);
+  }
+
+  .counter {
+    display: flex;
+    align-items: baseline;
+    gap: var(--gap-3);
+  }
+
+  .counter__value {
+    font-size: clamp(36px, 6vw, 52px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .counter__word {
+    display: grid;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .picker__result .btn { flex: none; }
+
+  .hero__quiz { font-size: 14px; }
+
+  @media (max-width: 620px) {
+    .picker { padding: var(--gap-4); }
+    .picker__row { grid-template-columns: 1fr; }
+    .picker__result { align-items: stretch; }
+    .picker__result .btn { width: 100%; }
+  }
+</style>

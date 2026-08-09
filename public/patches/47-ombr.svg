@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 42" width="36" height="42" role="img" aria-label="47 окрема механізована бригада">
+  <title>47 окрема механізована бригада</title>
+  <!-- Плейсхолдер шеврона. Замінюється реальним зображенням підрозділу. -->
+  <path d="M1 1h34v25.5L18 41 1 26.5Z" fill="#2A3124" stroke="#C6A44B" stroke-width="1.2"/>
+  <text x="18" y="19" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#E8E4D6">47</text>
+  <text x="18" y="31" text-anchor="middle" font-family="ui-monospace, monospace" font-size="7" fill="#B9B5A5">МБр</text>
+</svg>

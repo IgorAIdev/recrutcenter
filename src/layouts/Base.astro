@@ -1,0 +1,171 @@
+---
+// Шрифти — самохостинг. Підключаються тільки потрібні накреслення;
+// кириличні підмножини вантажаться за unicode-range, решта не вантажиться.
+import '@fontsource/oswald/500.css';
+import '@fontsource/oswald/600.css';
+import '@fontsource-variable/onest';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/global.css';
+import { withBase } from '../lib/paths';
+
+type Props = {
+  title: string;
+  description: string;
+  /** Абсолютний або кореневий шлях до og-картинки. */
+  ogImage?: string;
+  /** Явний canonical, якщо сторінка доступна за кількома адресами. */
+  canonical?: string;
+};
+
+const { title, description, ogImage = withBase('/og-default.svg'), canonical } = Astro.props;
+
+const canonicalUrl = new URL(canonical ?? Astro.url.pathname, Astro.site);
+const ogImageUrl = new URL(ogImage, Astro.site);
+---
+
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <!-- user-scalable=no заборонено брифом: масштабування лишається доступним. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#151812" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl.href} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Центр рекрутингу ЗСУ" />
+    <meta property="og:locale" content="uk_UA" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl.href} />
+    <meta property="og:image" content={ogImageUrl.href} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href={withBase("/favicon.svg")} type="image/svg+xml" />
+
+    <slot name="head" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Перейти до змісту</a>
+
+    <header class="masthead">
+      <div class="shell masthead__inner">
+        <a class="wordmark" href={withBase("/")}>
+          <span class="wordmark__line">Центр рекрутингу</span>
+          <span class="wordmark__line wordmark__line--dim">Збройних Сил України</span>
+        </a>
+
+        <nav class="masthead__nav" aria-label="Основна навігація">
+          <a href={withBase("/vacancies")}>Вакансії</a>
+          <a href={withBase("/#shliakhy")}>Три шляхи</a>
+          <a href={withBase("/about")}>Про центр</a>
+          <a href={withBase("/#kontakty")}>Контакти</a>
+        </nav>
+
+        <a class="masthead__phone data" href="tel:0800000000">0 800 000 000</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="shell footer__inner">
+        <p class="footer__note dim">
+          Офіційний ресурс Центру рекрутингу Збройних Сил України. Без посередників
+          і без плати за оформлення.
+        </p>
+        <p class="footer__note dim data">© {new Date().getFullYear()}</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .masthead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--field) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .masthead__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-5);
+    min-height: 64px;
+    padding-block: var(--gap-3);
+  }
+
+  .wordmark {
+    display: grid;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.15;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    text-decoration: none;
+    margin-right: auto;
+  }
+
+  .wordmark__line--dim {
+    color: var(--canvas-dim);
+    font-weight: 500;
+  }
+
+  .masthead__nav {
+    display: flex;
+    gap: var(--gap-5);
+    font-size: 14px;
+  }
+
+  .masthead__nav a { text-decoration: none; }
+  .masthead__nav a:hover { color: var(--signal); }
+
+  .masthead__phone {
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    padding-left: var(--gap-5);
+    border-left: 1px solid var(--line);
+  }
+
+  .footer {
+    border-top: 1px solid var(--line);
+    padding-block: var(--gap-6);
+  }
+
+  .footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-4);
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .footer__note {
+    font-size: 13px;
+    max-width: 60ch;
+  }
+
+  @media (max-width: 900px) {
+    .masthead__nav { display: none; }
+  }
+
+  @media (max-width: 560px) {
+    .masthead__phone {
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+</style>

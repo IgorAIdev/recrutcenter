@@ -1,0 +1,103 @@
+---
+import { withBase } from '../lib/paths';
+const paths = [
+  {
+    href: withBase('/contract-18-24'),
+    index: '01',
+    title: 'Контракт 18–24',
+    text: 'Для тих, кому від 18 до 24 років. Строк служби, виплати й гарантії після завершення — окремі від загального контракту.',
+    action: 'Умови контракту',
+  },
+  {
+    href: withBase('/transfer'),
+    index: '02',
+    title: 'Переведення',
+    text: 'Для чинних військовослужбовців. Порядок подання рапорту, строки погодження і перелік підрозділів, які приймають переведення.',
+    action: 'Порядок переведення',
+  },
+  {
+    href: withBase('/return'),
+    index: '03',
+    title: 'Повернення із СЗЧ',
+    text: 'Що робити, якщо ви самовільно залишили частину. Умови повернення без судимості й підрозділи, які приймають.',
+    action: 'Як повернутись',
+  },
+];
+---
+
+<section class="section" id="shliakhy">
+  <div class="shell">
+    <div class="section-head">
+      <h2 class="section-title">Три шляхи</h2>
+      <p class="section-note">
+        Вступ уперше, переведення між підрозділами й повернення до служби — це різні
+        процедури з різними строками. Кожна описана окремо.
+      </p>
+    </div>
+
+    <div class="paths">
+      {paths.map((path) => (
+        <a class="path" href={path.href}>
+          <span class="path__index data">{path.index}</span>
+          <h3 class="path__title">{path.title}</h3>
+          <p class="path__text dim">{path.text}</p>
+          <span class="path__action data">{path.action} →</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .paths {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-4);
+  }
+
+  .path {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3);
+    padding: var(--gap-5);
+    background: var(--field-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: border-color .12s linear, background-color .12s linear;
+  }
+
+  .path:hover {
+    border-color: var(--line-strong);
+    background: var(--field-3);
+  }
+
+  .path__index {
+    font-size: 12px;
+    letter-spacing: .1em;
+    color: var(--canvas-dim);
+  }
+
+  .path__title {
+    font-size: 24px;
+    font-weight: 500;
+  }
+
+  .path__text {
+    font-size: 14px;
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .path__action {
+    font-size: 13px;
+    letter-spacing: .04em;
+    color: var(--canvas-dim);
+  }
+
+  .path:hover .path__action { color: var(--signal); }
+
+  @media (max-width: 860px) {
+    .paths { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,85 @@
+---
+import { units } from '../data/taxonomy';
+import { plural } from '../lib/format';
+import { withBase } from '../lib/paths';
+
+// Максимум 24 підрозділи, далі — посилання на повний каталог.
+// Жодного дублювання в розмітці заради нескінченної прокрутки.
+const MAX = 24;
+const all = units();
+const shown = all.slice(0, MAX);
+---
+
+<section class="section" id="pidrozdily">
+  <div class="shell">
+    <div class="section-head">
+      <h2 class="section-title">Підрозділи</h2>
+      <p class="section-note">
+        Частини, які зараз набирають через центр. На сторінці підрозділу — його
+        відкриті позиції, район дій і умови.
+      </p>
+    </div>
+
+    <ul class="units">
+      {shown.map((unit) => (
+        <li>
+          <a class="unit" href={withBase(`/unit/${unit.slug}`)}>
+            <img class="unit__patch" src={withBase(unit.patch)} alt="" width="36" height="42" loading="lazy" />
+            <span class="unit__name">{unit.name}</span>
+            <span class="unit__count data dim">
+              {unit.openings} {plural(unit.openings, ['позиція', 'позиції', 'позицій'])}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    {all.length > MAX && (
+      <p class="units__more">
+        <a class="btn btn--ghost" href={withBase('/units')}>Усі підрозділи</a>
+      </p>
+    )}
+  </div>
+</section>
+
+<style>
+  .units {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .unit {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-3);
+    height: 100%;
+    padding: var(--gap-4);
+    background: var(--field-2);
+    text-decoration: none;
+    transition: background-color .12s linear;
+  }
+
+  .unit:hover { background: var(--field-3); }
+
+  .unit__patch { flex: none; }
+
+  .unit__name {
+    font-size: 13px;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .unit__count {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .units__more { margin-top: var(--gap-5); }
+</style>

@@ -1,0 +1,11 @@
+# Контекст збірки має містити тільки вихідники: усе інше або зайве,
+# або перетирає те, що ставиться в контейнері.
+node_modules
+dist
+.astro
+.git
+.github
+.gitignore
+README.md
+Dockerfile
+docker-compose.yaml
